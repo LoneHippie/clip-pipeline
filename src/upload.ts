@@ -15,7 +15,7 @@
  * in separate files and call them from postClip() below.
  */
 
-import type { Db } from './db.js';
+import type { Db } from "./db.js";
 
 export async function postClip(clipId: number, db: Db): Promise<void> {
   console.log(`[upload] Clip ${clipId} — upload step not yet implemented.`);

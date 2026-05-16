@@ -1,6 +1,6 @@
-import { Database } from 'bun:sqlite';
-import { mkdirSync, existsSync } from 'node:fs';
-import path from 'node:path';
+import { Database } from "bun:sqlite";
+import { existsSync, mkdirSync } from "node:fs";
+import path from "node:path";
 
 export function createDb(dbPath: string) {
   // Ensure parent directory exists
@@ -10,7 +10,7 @@ export function createDb(dbPath: string) {
   const db = new Database(dbPath, { create: true });
 
   // WAL mode for better concurrency
-  db.exec('PRAGMA journal_mode=WAL;');
+  db.exec("PRAGMA journal_mode=WAL;");
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS jobs (
@@ -51,37 +51,32 @@ export function createDb(dbPath: string) {
   return {
     // ── Jobs ──────────────────────────────────────────────────────────────────
     insertJob: db.prepare<void, [string, string, string]>(
-      `INSERT INTO jobs (job_id, filename, source_path) VALUES (?, ?, ?)`
+      `INSERT INTO jobs (job_id, filename, source_path) VALUES (?, ?, ?)`,
     ),
     updateJobStatus: db.prepare<void, [string, string]>(
-      `UPDATE jobs SET status = ?, updated_at = datetime('now') WHERE job_id = ?`
+      `UPDATE jobs SET status = ?, updated_at = datetime('now') WHERE job_id = ?`,
     ),
-    listJobs: db.prepare(
-      `SELECT * FROM jobs ORDER BY uploaded_at DESC`
-    ),
-    getJobById: db.prepare(
-      `SELECT * FROM jobs WHERE job_id = ?`
-    ),
+    listJobs: db.prepare(`SELECT * FROM jobs ORDER BY uploaded_at DESC`),
+    getJobById: db.prepare(`SELECT * FROM jobs WHERE job_id = ?`),
 
     // ── Clips ─────────────────────────────────────────────────────────────────
-    insertClip: db.prepare<{ lastInsertRowid: number }, [string, string, number, number]>(
-      `INSERT INTO clips (job_id, title, start_sec, end_sec) VALUES (?, ?, ?, ?)`
+    insertClip: db.prepare<
+      { lastInsertRowid: number },
+      [string, string, number, number]
+    >(
+      `INSERT INTO clips (job_id, title, start_sec, end_sec) VALUES (?, ?, ?, ?)`,
     ),
     updateClipStatus: db.prepare<void, [string, number]>(
-      `UPDATE clips SET status = ? WHERE id = ?`
+      `UPDATE clips SET status = ? WHERE id = ?`,
     ),
     updateClipError: db.prepare<void, [string, number]>(
-      `UPDATE clips SET status = 'failed', error = ? WHERE id = ?`
+      `UPDATE clips SET status = 'failed', error = ? WHERE id = ?`,
     ),
     updateClipOutput: db.prepare<void, [string, string, number]>(
-      `UPDATE clips SET output_path = ?, metadata_json = ?, status = 'pending_review' WHERE id = ?`
+      `UPDATE clips SET output_path = ?, metadata_json = ?, status = 'pending_review' WHERE id = ?`,
     ),
-    getClipById: db.prepare(
-      `SELECT * FROM clips WHERE id = ?`
-    ),
-    getClipsForJob: db.prepare(
-      `SELECT * FROM clips WHERE job_id = ?`
-    ),
+    getClipById: db.prepare(`SELECT * FROM clips WHERE id = ?`),
+    getClipsForJob: db.prepare(`SELECT * FROM clips WHERE job_id = ?`),
 
     // ── Review queue ──────────────────────────────────────────────────────────
     getPendingReviewClips: db.prepare(`
@@ -93,10 +88,10 @@ export function createDb(dbPath: string) {
 
     // ── Uploads ───────────────────────────────────────────────────────────────
     insertUpload: db.prepare<void, [number, string, string, string]>(
-      `INSERT INTO uploads (clip_id, platform, post_id, status, uploaded_at) VALUES (?, ?, ?, ?, datetime('now'))`
+      `INSERT INTO uploads (clip_id, platform, post_id, status, uploaded_at) VALUES (?, ?, ?, ?, datetime('now'))`,
     ),
     markClipPosted: db.prepare<void, [number]>(
-      `UPDATE clips SET status = 'posted', posted_at = datetime('now') WHERE id = ?`
+      `UPDATE clips SET status = 'posted', posted_at = datetime('now') WHERE id = ?`,
     ),
 
     // ── Cleanup ───────────────────────────────────────────────────────────────
@@ -112,7 +107,7 @@ export function createDb(dbPath: string) {
       WHERE j.source_path = ? AND c.cleaned_at IS NULL
     `),
     markClipCleaned: db.prepare<void, [number]>(
-      `UPDATE clips SET status = 'cleaned', cleaned_at = datetime('now') WHERE id = ?`
+      `UPDATE clips SET status = 'cleaned', cleaned_at = datetime('now') WHERE id = ?`,
     ),
   };
 }

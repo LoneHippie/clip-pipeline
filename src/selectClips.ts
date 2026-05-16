@@ -1,7 +1,7 @@
-import { runClipSelectionAgent } from '../agents/index.js';
-import { withRetry } from '../agents/utils/index.js';
-import type { ClipSelection } from './types.js';
-import type { AgentStreamChunk } from '../agents/phases/types.js';
+import { runClipSelectionAgent } from "../agents/index.js";
+import type { AgentStreamChunk } from "../agents/phases/types.js";
+import { withRetry } from "../agents/utils/index.js";
+import type { ClipSelection } from "./types.js";
 
 export async function selectClips(
   localVideoPath: string,
@@ -11,6 +11,6 @@ export async function selectClips(
   return withRetry(
     () => runClipSelectionAgent(localVideoPath, videoTitle, onChunk),
     2,
-    'clip-selection',
+    "clip-selection",
   );
 }

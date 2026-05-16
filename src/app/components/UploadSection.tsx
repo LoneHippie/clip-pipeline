@@ -1,64 +1,75 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from "react";
 
 interface Props {
   onUploaded: () => void;
 }
 
-type UploadState = 'idle' | 'uploading' | 'done' | 'error';
+type UploadState = "idle" | "uploading" | "done" | "error";
 
 export function UploadSection({ onUploaded }: Props) {
-  const [state, setState]     = useState<UploadState>('idle');
+  const [state, setState] = useState<UploadState>("idle");
   const [progress, setProgress] = useState(0);
-  const [message, setMessage]   = useState('');
+  const [message, setMessage] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const uploadFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith('video/') && !file.name.match(/\.(mp4|mov|mkv|avi|webm)$/i)) {
-      setState('error');
-      setMessage('Unsupported file type. Use MP4, MOV, MKV, AVI, or WebM.');
-      return;
-    }
+  const uploadFile = useCallback(
+    async (file: File) => {
+      if (
+        !file.type.startsWith("video/") &&
+        !file.name.match(/\.(mp4|mov|mkv|avi|webm)$/i)
+      ) {
+        setState("error");
+        setMessage("Unsupported file type. Use MP4, MOV, MKV, AVI, or WebM.");
+        return;
+      }
 
-    setState('uploading');
-    setProgress(0);
-    setMessage(`Uploading ${file.name}…`);
+      setState("uploading");
+      setProgress(0);
+      setMessage(`Uploading ${file.name}…`);
 
-    const formData = new FormData();
-    formData.append('video', file);
+      const formData = new FormData();
+      formData.append("video", file);
 
-    return new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/upload');
+      return new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/upload");
 
-      xhr.upload.onprogress = e => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
-      };
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable)
+            setProgress(Math.round((e.loaded / e.total) * 100));
+        };
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setState('done');
-          setMessage('Uploaded — pipeline is processing…');
-          setProgress(100);
-          onUploaded();
-          setTimeout(() => { setState('idle'); setProgress(0); setMessage(''); }, 4000);
-          resolve();
-        } else {
-          setState('error');
-          setMessage(`Upload failed (${xhr.status}): ${xhr.responseText}`);
-          reject(new Error(xhr.responseText));
-        }
-      };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setState("done");
+            setMessage("Uploaded — pipeline is processing…");
+            setProgress(100);
+            onUploaded();
+            setTimeout(() => {
+              setState("idle");
+              setProgress(0);
+              setMessage("");
+            }, 4000);
+            resolve();
+          } else {
+            setState("error");
+            setMessage(`Upload failed (${xhr.status}): ${xhr.responseText}`);
+            reject(new Error(xhr.responseText));
+          }
+        };
 
-      xhr.onerror = () => {
-        setState('error');
-        setMessage('Network error during upload.');
-        reject(new Error('Network error'));
-      };
+        xhr.onerror = () => {
+          setState("error");
+          setMessage("Network error during upload.");
+          reject(new Error("Network error"));
+        };
 
-      xhr.send(formData);
-    });
-  }, [onUploaded]);
+        xhr.send(formData);
+      });
+    },
+    [onUploaded],
+  );
 
   const handleFiles = (files: FileList | null) => {
     if (!files?.length) return;
@@ -72,31 +83,36 @@ export function UploadSection({ onUploaded }: Props) {
     handleFiles(e.dataTransfer.files);
   };
 
-  const isUploading = state === 'uploading';
+  const isUploading = state === "uploading";
 
   return (
     <div>
       <div
-        className={`upload-zone${dragOver ? ' drag-over' : ''}`}
+        className={`upload-zone${dragOver ? " drag-over" : ""}`}
         onClick={() => !isUploading && inputRef.current?.click()}
-        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
       >
-        <div className="icon">{state === 'done' ? '✅' : state === 'error' ? '❌' : '🎬'}</div>
+        <div className="icon">
+          {state === "done" ? "✅" : state === "error" ? "❌" : "🎬"}
+        </div>
         <div className="label">
-          {isUploading ? 'Uploading…' : 'Drop a video file or click to browse'}
+          {isUploading ? "Uploading…" : "Drop a video file or click to browse"}
         </div>
         <div className="hint">MP4 · MOV · MKV · AVI · WebM · up to 10 GB</div>
         <input
           ref={inputRef}
           type="file"
           accept="video/mp4,video/quicktime,video/x-matroska,video/x-msvideo,video/webm,.mp4,.mov,.mkv,.avi,.webm"
-          onChange={e => handleFiles(e.target.files)}
+          onChange={(e) => handleFiles(e.target.files)}
         />
       </div>
 
-      {(isUploading || state === 'done') && (
+      {(isUploading || state === "done") && (
         <div className="upload-progress">
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: `${progress}%` }} />
@@ -105,9 +121,11 @@ export function UploadSection({ onUploaded }: Props) {
         </div>
       )}
 
-      {state === 'error' && (
+      {state === "error" && (
         <div className="upload-progress">
-          <div className="progress-label" style={{ color: 'var(--red)' }}>{message}</div>
+          <div className="progress-label" style={{ color: "var(--red)" }}>
+            {message}
+          </div>
         </div>
       )}
     </div>

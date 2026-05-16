@@ -1,4 +1,4 @@
-export type AgentName = 'clip-selection' | 'transcription' | 'metadata';
+export type AgentName = "clip-selection" | "transcription" | "metadata";
 
 export interface AgentContextConfig {
   baseSystemPrompt: string;

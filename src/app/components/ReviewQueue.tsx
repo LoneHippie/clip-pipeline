@@ -1,5 +1,5 @@
-import { ClipCard } from './ClipCard.js';
-import type { ClipRow } from '../App.js';
+import { ClipCard } from "./ClipCard.js";
+import type { ClipRow } from "../App.js";
 
 interface Props {
   clips: ClipRow[];
@@ -17,7 +17,7 @@ export function ReviewQueue({ clips, onAction }: Props) {
 
   return (
     <div className="clip-grid">
-      {clips.map(clip => (
+      {clips.map((clip) => (
         <ClipCard key={clip.id} clip={clip} onAction={onAction} />
       ))}
     </div>

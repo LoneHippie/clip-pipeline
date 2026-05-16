@@ -1,7 +1,8 @@
-import { rm } from 'node:fs/promises';
-import type { Db } from './db.js';
+import { rm } from "node:fs/promises";
+import type { Db } from "./db.js";
 
-const GRACE_PERIOD_MS = parseInt(process.env.CLEANUP_GRACE_HOURS ?? '2', 10) * 60 * 60 * 1000;
+const GRACE_PERIOD_MS =
+  parseInt(process.env.CLEANUP_GRACE_HOURS ?? "2", 10) * 60 * 60 * 1000;
 
 interface StaleClip {
   id: number;
@@ -29,7 +30,9 @@ export async function runCleanupPass(db: Db): Promise<void> {
 
       // Only delete the source video once ALL clips from this job are cleaned up
       if (clip.source_path) {
-        const row = db.countActiveClipsForSource.get(clip.source_path) as CountRow | null;
+        const row = db.countActiveClipsForSource.get(
+          clip.source_path,
+        ) as CountRow | null;
         if ((row?.count ?? 1) === 0) {
           await rm(clip.source_path, { force: true });
           console.log(`[cleanup] Deleted source video: ${clip.source_path}`);
@@ -44,8 +47,15 @@ export async function runCleanupPass(db: Db): Promise<void> {
 }
 
 export function startCleanupScheduler(db: Db): void {
-  runCleanupPass(db).catch(err => console.error('[cleanup] Initial pass failed:', err));
-  setInterval(() => {
-    runCleanupPass(db).catch(err => console.error('[cleanup] Pass failed:', err));
-  }, 15 * 60 * 1000);
+  runCleanupPass(db).catch((err) =>
+    console.error("[cleanup] Initial pass failed:", err),
+  );
+  setInterval(
+    () => {
+      runCleanupPass(db).catch((err) =>
+        console.error("[cleanup] Pass failed:", err),
+      );
+    },
+    15 * 60 * 1000,
+  );
 }

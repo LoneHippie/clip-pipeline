@@ -4,7 +4,7 @@
 export async function withRetry<T>(
   fn: () => Promise<T>,
   maxAttempts: number,
-  label = 'operation',
+  label = "operation",
 ): Promise<T> {
   let lastErr: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -14,8 +14,10 @@ export async function withRetry<T>(
       lastErr = err;
       if (attempt < maxAttempts) {
         const delay = 2000 * attempt;
-        console.warn(`[retry] ${label} attempt ${attempt} failed — retrying in ${delay}ms`);
-        await new Promise(r => setTimeout(r, delay));
+        console.warn(
+          `[retry] ${label} attempt ${attempt} failed — retrying in ${delay}ms`,
+        );
+        await new Promise((r) => setTimeout(r, delay));
       }
     }
   }
@@ -24,5 +26,5 @@ export async function withRetry<T>(
 
 /** Sleep for `ms` milliseconds. */
 export function sleep(ms: number): Promise<void> {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms));
 }

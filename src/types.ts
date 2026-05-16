@@ -1,14 +1,14 @@
 export type JobStatus =
-  | 'uploading'
-  | 'queued'
-  | 'selecting_clips'
-  | 'processing'
-  | 'pending_review'
-  | 'approved'
-  | 'rejected'
-  | 'posting'
-  | 'posted'
-  | 'failed';
+  | "uploading"
+  | "queued"
+  | "selecting_clips"
+  | "processing"
+  | "pending_review"
+  | "approved"
+  | "rejected"
+  | "posting"
+  | "posted"
+  | "failed";
 
 export interface VideoJob {
   jobId: string;

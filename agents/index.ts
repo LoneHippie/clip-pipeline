@@ -9,7 +9,7 @@
  *  - runMetadataAgent       → Claude Haiku (platform-native copy via generateObject)
  */
 
-export { runClipSelectionPhase  as runClipSelectionAgent  } from './phases/clipSelectionPhase.js';
-export { runTranscriptionPhase  as runTranscriptionAgent  } from './phases/transcriptionPhase.js';
-export { runMetadataPhase       as runMetadataAgent       } from './phases/metadataPhase.js';
-export type { AgentStreamChunk } from './phases/types.js';
+export { runClipSelectionPhase as runClipSelectionAgent } from "./phases/clipSelectionPhase.js";
+export { runMetadataPhase as runMetadataAgent } from "./phases/metadataPhase.js";
+export { runTranscriptionPhase as runTranscriptionAgent } from "./phases/transcriptionPhase.js";
+export type { AgentStreamChunk } from "./phases/types.js";
