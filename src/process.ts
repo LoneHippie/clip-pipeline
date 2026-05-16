@@ -105,7 +105,10 @@ export async function processClipFull(
       `subtitles=${escapedSrt}:force_style='Fontname=Arial,Fontsize=18,Bold=1,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,MarginV=120'`,
     ].join(","),
     "-af",
-    "loudnorm=I=-14:TP=-1.5:LRA=11",
+    // Raise pitch by 1 semitone (2^(1/12) ≈ 1.0595) without changing duration.
+    // asetrate reinterprets the sample rate to shift pitch up, aresample restores
+    // the output to 44100 Hz, and atempo (1/1.0595 ≈ 0.9439) stretches time back.
+    "asetrate=sample_rate*1.0595,aresample=44100,atempo=0.9439,loudnorm=I=-14:TP=-1.5:LRA=11",
     "-c:v",
     "libx264",
     "-preset",
