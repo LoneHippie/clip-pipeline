@@ -29,6 +29,7 @@ export interface PlatformMetadata {
   tiktok: { caption: string; hashtags: string[] };
   instagram: { caption: string; hashtags: string[] };
   youtubeShorts: { title: string; description: string; tags: string[] };
+  isComposite?: boolean;
 }
 
 export default function App() {

@@ -178,6 +178,7 @@ body {
   white-space: nowrap;
 }
 
+.badge.composite       { background: rgba(108,99,255,0.2);  color: var(--accent); }
 .badge.queued          { background: rgba(107,114,128,0.2); color: #9ca3af; }
 .badge.uploading       { background: rgba(59,130,246,0.15); color: var(--blue); }
 .badge.selecting_clips { background: rgba(168,85,247,0.15); color: #a855f7; }
@@ -210,6 +211,14 @@ body {
   background: #000;
   display: flex;
   justify-content: center;
+  position: relative;
+}
+
+.clip-composite-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
 }
 
 .clip-video {

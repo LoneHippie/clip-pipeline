@@ -25,6 +25,11 @@ export function ClipCard({ clip, onAction }: Props) {
   return (
     <div className="clip-card">
       <div className="clip-video-wrapper">
+        {clip.metadata?.isComposite && (
+          <span className="badge composite clip-composite-badge">
+            composite
+          </span>
+        )}
         <video
           className="clip-video"
           src={`/clips/preview/${clip.id}`}

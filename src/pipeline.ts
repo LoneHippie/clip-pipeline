@@ -128,7 +128,10 @@ export async function runPipeline(
           clip.viralityReason,
         );
 
-        db.updateClipOutput.run(outPath, JSON.stringify(metadata), clipId);
+        const storedMeta = isCompositeClip(clip)
+          ? { ...metadata, isComposite: true }
+          : metadata;
+        db.updateClipOutput.run(outPath, JSON.stringify(storedMeta), clipId);
         log(`Clip ${i + 1}/${clips.length} ready for review: "${clip.title}"`);
       } catch (clipErr) {
         const msg =
