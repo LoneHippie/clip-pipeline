@@ -128,12 +128,12 @@ export async function runClipSelectionPhase(
           },
           {
             type: "text",
-            text: `Analyze this video and identify the 3–5 best clips for social media (TikTok, Instagram Reels, YouTube Shorts).
+            text: `Analyze this video and identify the 3–8 best clips for social media (TikTok, Instagram Reels, YouTube Shorts).
 
 Video title: ${title}
 
 Rules:
-- Each clip must be 45–90 seconds long
+- Each clip must be 20–90 seconds long
 - Must be fully self-contained (no dangling context)
 - Start on a strong hook: surprising claim, bold opinion, or emotional moment
 - End at a natural pause or conclusion — never mid-sentence
