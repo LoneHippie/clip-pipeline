@@ -90,6 +90,9 @@ export function createDb(dbPath: string) {
     insertUpload: db.prepare<void, [number, string, string, string]>(
       `INSERT INTO uploads (clip_id, platform, post_id, status, uploaded_at) VALUES (?, ?, ?, ?, datetime('now'))`,
     ),
+    insertUploadError: db.prepare<void, [number, string, string]>(
+      `INSERT INTO uploads (clip_id, platform, status, error, uploaded_at) VALUES (?, ?, 'failed', ?, datetime('now'))`,
+    ),
     markClipPosted: db.prepare<void, [number]>(
       `UPDATE clips SET status = 'posted', posted_at = datetime('now') WHERE id = ?`,
     ),
