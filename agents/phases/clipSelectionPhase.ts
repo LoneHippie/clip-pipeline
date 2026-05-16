@@ -3,33 +3,66 @@ import { GoogleAIFileManager } from "@google/generative-ai/server";
 import { generateObject } from "ai";
 import path from "node:path";
 import { z } from "zod";
-import type { ClipSelection } from "../../src/types.js";
-import { buildSystemPrompt } from "../context/loader.js";
-import { loadSkillContent } from "../skills/index.js";
-import { sleep } from "../utils/index.js";
-import type { AgentStreamChunk } from "./types.js";
+import type { AnyClipSelection } from "../../src/types";
+import { buildSystemPrompt } from "../context/loader";
+import { loadSkillContent } from "../skills/index";
+import { sleep } from "../utils/index";
+import type { AgentStreamChunk } from "./types";
+
+const SingleClipSchema = z.object({
+  type: z.literal("single"),
+  title: z.string().describe("Short punchy clip title, max 60 chars"),
+  start: z.string().describe('Start time as MM:SS — e.g. "02:34"'),
+  end: z.string().describe('End time as MM:SS — e.g. "03:18"'),
+  hook: z
+    .string()
+    .describe(
+      "Opening sentence/phrase that grabs attention in the first 3 seconds",
+    ),
+  viralityReason: z
+    .string()
+    .describe(
+      "One sentence explaining why this clip works as a standalone short",
+    ),
+});
+
+const CompositeClipSchema = z.object({
+  type: z.literal("composite"),
+  title: z
+    .string()
+    .describe("Short punchy title for the combined clip, max 60 chars"),
+  segments: z
+    .array(
+      z.object({
+        start: z.string().describe("Segment start as MM:SS"),
+        end: z.string().describe("Segment end as MM:SS"),
+      }),
+    )
+    .min(2)
+    .max(3)
+    .describe(
+      "2–3 non-overlapping segments in chronological order, each 10–40 seconds. Only use when segments form a genuine setup-payoff or cause-effect arc.",
+    ),
+  hook: z
+    .string()
+    .describe("Opening sentence from the first segment that grabs attention"),
+  viralityReason: z
+    .string()
+    .describe(
+      "Why these segments together tell a stronger story than either alone",
+    ),
+});
 
 const ClipSchema = z.object({
   clips: z
     .array(
-      z.object({
-        title: z.string().describe("Short punchy clip title, max 60 chars"),
-        start: z.string().describe('Start time as MM:SS — e.g. "02:34"'),
-        end: z.string().describe('End time as MM:SS — e.g. "03:18"'),
-        hook: z
-          .string()
-          .describe(
-            "Opening sentence/phrase that grabs attention in the first 3 seconds",
-          ),
-        viralityReason: z
-          .string()
-          .describe(
-            "One sentence explaining why this clip works as a standalone short",
-          ),
-      }),
+      z.discriminatedUnion("type", [SingleClipSchema, CompositeClipSchema]),
     )
     .min(1)
-    .max(5),
+    .max(8)
+    .describe(
+      "3–8 clips total. At most ONE may be composite — only include it if a genuine narrative payoff exists across segments.",
+    ),
 });
 
 function parseMmSs(ts: string): number {
@@ -55,7 +88,7 @@ export async function runClipSelectionPhase(
   videoPath: string,
   title: string,
   onChunk?: (chunk: AgentStreamChunk) => void,
-): Promise<ClipSelection[]> {
+): Promise<AnyClipSelection[]> {
   onChunk?.({
     type: "phase-start",
     phase: "clip-selection",
@@ -132,12 +165,18 @@ export async function runClipSelectionPhase(
 
 Video title: ${title}
 
-Rules:
-- Each clip must be 20–90 seconds long
+Rules for single clips (type: "single"):
+- 20–90 seconds long
 - Must be fully self-contained (no dangling context)
 - Start on a strong hook: surprising claim, bold opinion, or emotional moment
 - End at a natural pause or conclusion — never mid-sentence
-- Return start/end as MM:SS only — do NOT return word-level timestamps`,
+
+Composite clip (type: "composite") — optional, at most one:
+- Only if two or three moments in this specific video form a genuine setup-payoff arc together
+- Each segment 10–40 seconds; total 25–90 seconds; segments in chronological order
+- If no strong narrative connection exists, omit entirely
+
+Return start/end as MM:SS only — do NOT return word-level timestamps`,
           },
         ],
       },
@@ -158,24 +197,51 @@ Rules:
   });
 
   // Parse timestamps and validate durations
-  const clips = object.clips.map((clip) => {
+  const clips: AnyClipSelection[] = object.clips.map((clip) => {
+    if (clip.type === "composite") {
+      const segments = clip.segments.map((seg) => {
+        const startSec = parseMmSs(seg.start);
+        const endSec = parseMmSs(seg.end);
+        const dur = endSec - startSec;
+        if (dur < 5 || dur > 45) {
+          throw new Error(
+            `Composite segment in "${clip.title}" has invalid duration: ${dur}s (expected 5–45s)`,
+          );
+        }
+        return { startSec, endSec };
+      });
+      const totalDur = segments.reduce(
+        (s, seg) => s + seg.endSec - seg.startSec,
+        0,
+      );
+      if (totalDur < 20 || totalDur > 90) {
+        throw new Error(
+          `Composite clip "${clip.title}" total duration ${totalDur}s is out of range (20–90s)`,
+        );
+      }
+      return {
+        title: clip.title,
+        segments,
+        hook: clip.hook,
+        viralityReason: clip.viralityReason,
+      };
+    }
+
     const startSec = parseMmSs(clip.start);
     const endSec = parseMmSs(clip.end);
     const duration = endSec - startSec;
-
-    if (duration < 30 || duration > 120) {
+    if (duration < 20 || duration > 120) {
       throw new Error(
-        `Clip "${clip.title}" has invalid duration: ${duration}s (expected 30–120s)`,
+        `Clip "${clip.title}" has invalid duration: ${duration}s (expected 20–120s)`,
       );
     }
-
     return {
       title: clip.title,
       startSec,
       endSec,
       hook: clip.hook,
       viralityReason: clip.viralityReason,
-    } satisfies ClipSelection;
+    };
   });
 
   onChunk?.({

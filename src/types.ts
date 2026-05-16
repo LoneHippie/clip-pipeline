@@ -26,6 +26,26 @@ export interface ClipSelection {
   viralityReason: string;
 }
 
+export interface ClipSegment {
+  startSec: number;
+  endSec: number;
+}
+
+export interface CompositeClipSelection {
+  title: string;
+  segments: ClipSegment[];
+  hook: string;
+  viralityReason: string;
+}
+
+export type AnyClipSelection = ClipSelection | CompositeClipSelection;
+
+export function isCompositeClip(
+  clip: AnyClipSelection,
+): clip is CompositeClipSelection {
+  return "segments" in clip;
+}
+
 export interface Word {
   word: string;
   start: number;
