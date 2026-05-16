@@ -1,41 +1,16 @@
-import { serve } from "bun";
-import index from "./index.html";
+import 'dotenv/config';
+import { createServer } from './server.js';
+import { startCleanupScheduler } from './cleanup.js';
 
-const server = serve({
-  routes: {
-    // Serve index.html for all unmatched routes.
-    "/*": index,
+const PORT = parseInt(process.env.PORT ?? '3000', 10);
 
-    "/api/hello": {
-      async GET(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "GET",
-        });
-      },
-      async PUT(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "PUT",
-        });
-      },
-    },
+const { app, db } = createServer();
 
-    "/api/hello/:name": async req => {
-      const name = req.params.name;
-      return Response.json({
-        message: `Hello, ${name}!`,
-      });
-    },
-  },
+startCleanupScheduler(db);
 
-  development: process.env.NODE_ENV !== "production" && {
-    // Enable browser hot reloading in development
-    hmr: true,
-
-    // Echo console logs from the browser to the server
-    console: true,
-  },
+app.listen(PORT, () => {
+  console.log(`[server] Clip pipeline running on http://localhost:${PORT}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[server] Frontend: run "bun run dev:client" to build the React app');
+  }
 });
-
-console.log(`🚀 Server running at ${server.url}`);

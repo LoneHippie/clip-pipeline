@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  clip-pipeline:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+
+      # ── AI API keys ──────────────────────────────────────────────────────
+      GOOGLE_GENERATIVE_AI_API_KEY: "${GOOGLE_GENERATIVE_AI_API_KEY}"
+      GROQ_API_KEY: "${GROQ_API_KEY}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+
+      # ── Storage paths (mapped to volumes below) ──────────────────────────
+      DB_PATH: /var/clip-pipeline/db/pipeline.db
+      UPLOADS_DIR: /var/clip-pipeline/uploads
+      TMP_DIR: /tmp/clips
+
+      # ── Cleanup config ───────────────────────────────────────────────────
+      CLEANUP_GRACE_HOURS: "${CLEANUP_GRACE_HOURS:-2}"
+
+      # ── Platform OAuth – fill in before enabling upload step ─────────────
+      YOUTUBE_ACCESS_TOKEN: "${YOUTUBE_ACCESS_TOKEN:-}"
+      YOUTUBE_REFRESH_TOKEN: "${YOUTUBE_REFRESH_TOKEN:-}"
+      YOUTUBE_CLIENT_ID: "${YOUTUBE_CLIENT_ID:-}"
+      YOUTUBE_CLIENT_SECRET: "${YOUTUBE_CLIENT_SECRET:-}"
+
+      TIKTOK_ACCESS_TOKEN: "${TIKTOK_ACCESS_TOKEN:-}"
+
+      INSTAGRAM_ACCESS_TOKEN: "${INSTAGRAM_ACCESS_TOKEN:-}"
+      IG_USER_ID: "${IG_USER_ID:-}"
+
+    volumes:
+      - uploads:/var/clip-pipeline/uploads
+      - db:/var/clip-pipeline/db
+      - tmp:/tmp/clips
+
+volumes:
+  uploads:
+  db:
+  tmp:
