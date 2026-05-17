@@ -61,7 +61,7 @@ const ClipSchema = z.object({
     .min(1)
     .max(8)
     .describe(
-      "3–8 clips total. At most ONE may be composite — only include it if a genuine narrative payoff exists across segments.",
+      "5–8 clips total. At most ONE may be composite — only include it if a genuine narrative payoff exists across segments.",
     ),
 });
 

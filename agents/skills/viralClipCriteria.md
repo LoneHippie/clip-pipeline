@@ -23,9 +23,9 @@
 - Clip ends abruptly before a conclusion is reached
 
 ## Duration guidelines
-- **Sweet spot**: 50–75 seconds
-- **Acceptable range**: 45–90 seconds
-- Under 45 s: usually too short to build context; over 90 s: loses momentum
+- **Sweet spot**: 30–60 seconds
+- **Acceptable range**: 20–150 seconds
+- Under 20 s: usually too short to build context; over 150 s: loses momentum
 
 ## Timestamp format
 Return start and end as `MM:SS` only. Examples: `"01:23"`, `"12:45"`.
@@ -44,7 +44,7 @@ A composite clip splices two to five short segments from different points in the
 ### Hard rules
 - Return **at most one** composite clip per video
 - Each segment: **10–40 seconds**
-- Total composite length: **25–90 seconds** across all segments
+- Total composite length: **25–150 seconds** across all segments
 - Segments must be non-overlapping and in chronological order
 <!-- - If no strong narrative connection exists across the video, skip it entirely — do NOT force one -->
 - Require at least ONE composite clip per video processed
